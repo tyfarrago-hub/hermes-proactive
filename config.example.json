@@ -1,0 +1,20 @@
+{
+  "_help": {
+    "vps_host": "user@host of your VPS, e.g. root@1.2.3.4",
+    "ssh_key": "absolute path to private key, e.g. ~/.ssh/id_ed25519",
+    "telegram_bot_username": "@your_hermes_bot — captured automatically in phase C",
+    "supergroup_chat_id": "negative int starting with -100... — captured in phase E",
+    "daily_thread_id": "small positive int — captured in phase E",
+    "proactive_thread_id": "small positive int — captured in phase E",
+    "watcher_cadence": "imessage in cron syntax (default '* * * * *' = every 1 min)",
+    "gmail_cadence": "gmail in cron syntax (default '*/30 * * * *' = every 30 min)"
+  },
+  "vps_host": null,
+  "ssh_key": "~/.ssh/id_ed25519",
+  "telegram_bot_username": null,
+  "supergroup_chat_id": null,
+  "daily_thread_id": null,
+  "proactive_thread_id": null,
+  "watcher_cadence": "* * * * *",
+  "gmail_cadence": "*/30 * * * *"
+}
