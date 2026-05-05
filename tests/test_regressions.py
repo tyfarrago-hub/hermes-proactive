@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import contextlib
+import io
 import subprocess
 import sys
 import tempfile
@@ -45,7 +47,8 @@ class RegressionTests(unittest.TestCase):
 
         try:
             with mock.patch.object(phase_h.ssh, "scp", side_effect=fake_scp), \
-                 mock.patch.object(phase_h.ssh, "run", side_effect=fake_run):
+                 mock.patch.object(phase_h.ssh, "run", side_effect=fake_run), \
+                 contextlib.redirect_stdout(io.StringIO()):
                 ok = phase_h._create_cron("root@example", "/tmp/key", "test-job", "* * * * *", prompt_path, "telegram:-100:7")
         finally:
             prompt_path.unlink(missing_ok=True)
@@ -88,7 +91,8 @@ class RegressionTests(unittest.TestCase):
              mock.patch.object(phase_f.state, "read", return_value=fake_state), \
              mock.patch.object(phase_f.state, "mark_phase", side_effect=fake_mark), \
              mock.patch.object(phase_f.ssh, "run", side_effect=fake_run), \
-             mock.patch("builtins.input", return_value="y"):
+             mock.patch("builtins.input", return_value="y"), \
+             contextlib.redirect_stdout(io.StringIO()):
             rc = phase_f.run()
 
         self.assertEqual(rc, 1)
