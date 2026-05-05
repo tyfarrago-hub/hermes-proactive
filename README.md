@@ -20,7 +20,7 @@ Bottle the proactive Hermes Agent setup so a friend with fresh Claude Code can r
 One line:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tyfarrago-hub/hermes-proactive/v0.1.1/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tyfarrago-hub/hermes-proactive/v0.1.2/install.sh | bash
 ```
 
 Then in a fresh Claude Code session in the same shell:
