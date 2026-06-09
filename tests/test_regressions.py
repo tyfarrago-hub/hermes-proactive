@@ -72,8 +72,8 @@ class RegressionTests(unittest.TestCase):
             "vps": {"host": "root@example", "ssh_key": "/tmp/key"},
             "telegram": {
                 "supergroup_chat_id": -100,
-                "daily_thread_id": 3,
-                "proactive_thread_id": 7,
+                "dashboard_thread_id": 3,
+                "decisions_thread_id": 7,
             },
         }
         marked: list[tuple[str, str, str | None]] = []

@@ -25,7 +25,7 @@ PHASE_LABELS = {
     "b_vps":         "Hermes Agent install on VPS",
     "c_telegram":    "Telegram bot (BotFather) registered + connected to Hermes",
     "d_imessage":    "Mac iMessage bridge installed + launchd loaded",
-    "e_supergroup":  "Telegram supergroup 'Hermes Ops' with Daily Briefs + Proactive Nudges topics",
+    "e_supergroup":  "Telegram supergroup 'Hermes Ops' with Dashboard + Decisions topics",
     "f_routing":     "Cron routing template applied",
     "g_oauth":       "Google Cloud project + OAuth client + Workspace token",
     "h_libs":        "Helper libs + watchers deployed to VPS",
@@ -59,7 +59,7 @@ def next_action() -> int:
     data = state.read()
     if state.all_complete():
         ansi.ok("hermes-proactive is fully set up.")
-        ansi.info("Try replying 'yes <id>' to any pending proposal in Proactive Nudges to test the loop.")
+        ansi.info("Try replying 'yes <id>' to any pending proposal in Decisions to test the loop.")
         return 0
 
     pending = state.next_pending()

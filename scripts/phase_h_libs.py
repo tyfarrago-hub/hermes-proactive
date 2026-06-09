@@ -157,13 +157,13 @@ def run() -> int:
     key = data.get("vps", {}).get("ssh_key")
     tg = data.get("telegram", {})
     chat = tg.get("supergroup_chat_id")
-    proactive = tg.get("proactive_thread_id")
+    decisions = tg.get("decisions_thread_id")
 
-    if not all([host, key, chat, proactive]):
+    if not all([host, key, chat, decisions]):
         state.mark_phase(PHASE, "blocked", blocker="phase E or A incomplete")
         return 1
 
-    proactive_target = f"telegram:{chat}:{proactive}"
+    decisions_target = f"telegram:{chat}:{decisions}"
 
     if not _scp_libs(host, key):
         state.mark_phase(PHASE, "blocked", blocker="lib SCP failed")
@@ -181,11 +181,11 @@ def run() -> int:
     ok1 = _create_cron(host, key, "imessage-scheduling-watcher",
                        "* * * * *",
                        PROMPTS_DIR / "imessage_scheduling_watcher.txt",
-                       proactive_target)
+                       decisions_target)
     ok2 = _create_cron(host, key, "gmail-reply-watcher",
                        "*/30 * * * *",
                        PROMPTS_DIR / "gmail_reply_watcher.txt",
-                       proactive_target)
+                       decisions_target)
     if not (ok1 and ok2):
         state.mark_phase(PHASE, "blocked", blocker="watcher cron creation failed")
         return 1

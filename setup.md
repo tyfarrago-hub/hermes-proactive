@@ -56,9 +56,9 @@ This is the one phase with the most clicks. The script gives you a numbered chec
 
 1. Create "Hermes Ops" group, just yourself.
 2. Enable Topics in group settings.
-3. Create topic "Daily Briefs", then "Proactive Nudges".
+3. Create topic "Dashboard", then "Decisions".
 4. Add your bot as admin with Manage Topics permission.
-5. In each topic, send the bot a message: `@yourbot daily ready` and `@yourbot proactive ready`.
+5. In each topic, send the bot a message: `@yourbot dashboard ready` and `@yourbot decisions ready`.
 
 Then the script polls Telegram's bot API `getUpdates` to discover the chat_id and the two thread_ids, writes them to state.
 
@@ -66,7 +66,7 @@ Then the script polls Telegram's bot API `getUpdates` to discover the chat_id an
 
 Script: `scripts/phase_f_routing.py`
 
-Reads existing Hermes cron jobs, classifies each into Daily / Proactive / local using a name-fragment table, applies edits via `hermes cron edit ... --deliver=...`. Auto-pauses jobs that don't match any bucket. Never deletes. Every remote pause/edit must return success before the phase is marked complete.
+Reads existing Hermes cron jobs, classifies each into Dashboard / local using a name-fragment table, applies edits via `hermes cron edit ... --deliver=...`. Auto-pauses jobs that don't match any bucket. Never deletes. Every remote pause/edit must return success before the phase is marked complete.
 
 Manual you do: confirm the proposed action plan with `y`.
 
@@ -89,7 +89,7 @@ Script: `scripts/phase_h_libs.py`
 - `pip install`s `google-auth google-api-python-client google-auth-oauthlib` into Hermes's venv.
 - Initializes `proposals.json` + watcher state.
 - Smoke test: runs `google_workspace.py` — must return both `gmail_ok: true` and `calendar_ok: true`.
-- Creates two cron jobs: `imessage-scheduling-watcher` (every 1 min) and `gmail-reply-watcher` (every 30 min), routed to Proactive Nudges.
+- Creates two cron jobs: `imessage-scheduling-watcher` (every 1 min) and `gmail-reply-watcher` (every 30 min), routed to Decisions.
 
 ## Phase I — USER.md proposal handler
 
@@ -102,14 +102,14 @@ Appends `snippets/user_md_proposal_section.md` to `/root/.hermes/USER.md`, templ
 Script: `scripts/phase_j_smoke.py`
 
 - Mints a synthetic `calendar.add` proposal scheduled for 2099 (won't conflict).
-- Posts it to Proactive Nudges and tells you the exact `yes <id>` reply to send.
+- Posts it to Decisions and tells you the exact `yes <id>` reply to send.
 - Polls `/root/.hermes/proposals.json` until Hermes receives the Telegram reply and executes the proposal.
 - Confirms a calendar event was created through the actual approval loop.
 - Deletes it.
-- Sends a "✅ hermes-proactive setup complete" message to your Daily Briefs topic.
+- Sends a "✅ hermes-proactive setup complete" message to your Dashboard topic.
 
-If you see the green check in Daily Briefs, the Telegram approval loop works end-to-end.
+If you see the green check in Dashboard, the Telegram approval loop works end-to-end.
 
 ## What to do once it's running
 
-Watch Proactive Nudges. When a proposal comes in, reply `yes <id>` to execute. The first time a real "📅 Calendar add?" appears for a friend confirming a meeting in iMessage, the system has paid for itself.
+Watch Decisions. When a proposal comes in, reply `yes <id>` to execute. The first time a real "📅 Calendar add?" appears for a friend confirming a meeting in iMessage, the system has paid for itself.

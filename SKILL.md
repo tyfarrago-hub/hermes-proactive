@@ -1,6 +1,6 @@
 ---
 name: hermes-proactive
-description: Set up a proactive Hermes Agent partner from scratch. Provisions VPS-side Hermes, Telegram supergroup with Daily Briefs and Proactive Nudges topics, Mac iMessage relay, Google Workspace OAuth, watchers that detect scheduling intent in iMessage and reply-needed Gmail threads, and a proposal-execution loop that lets you say "yes <id>" to actually create calendar events or send drafted emails. Use when a user wants Hermes to act like a real partner, not just a notifier.
+description: Set up a proactive Hermes Agent partner from scratch. Provisions VPS-side Hermes, Telegram supergroup with Dashboard and Decisions topics, Mac iMessage relay, Google Workspace OAuth, watchers that detect scheduling intent in iMessage and reply-needed Gmail threads, and a proposal-execution loop that lets you say "yes <id>" to actually create calendar events or send drafted emails. Use when a user wants Hermes to act like a real partner, not just a notifier.
 ---
 
 # hermes-proactive
@@ -54,8 +54,23 @@ hermes-proactive/
 ├── vps_libs/                   files SCP'd to /root/.hermes/lib/
 ├── prompts/                    cron job prompts
 ├── snippets/                   reusable text fragments (USER.md addition)
-└── docs/                       architecture, troubleshooting, uninstall
+└── docs/
+    ├── full-build-guide.md     blank-slate guide to the FULL system (everything past the core)
+    ├── architecture.md
+    ├── troubleshooting.md
+    └── uninstall.md
 ```
+
+## Beyond the core
+
+The ten phases install the **core**: Hermes + Telegram (Dashboard + Decisions) + iMessage + Google
++ the two watchers + the approval loop. That is the spine.
+
+When the user wants more than the core — a brain repo / Living CRM, WhatsApp, the Gmail emoji
+labeler or unsubscribe audit, Plaid, Stripe, the persistent VPS browser, the full cron map, or the
+USER/SOUL/MEMORY profile system — read `docs/full-build-guide.md` and follow the module + sequence
+there. Those modules are documented (not auto-installed); add them one at a time, after the core is
+green and quiet.
 
 ## State machine
 
@@ -67,8 +82,8 @@ State file: `~/.hermes-proactive/state.json`. Schema:
   "started_at": "...iso...",
   "vps": {"host": "1.2.3.4", "ssh_key": "~/.ssh/id_ed25519"},
   "telegram": {"bot_token_field": "in_keychain", "bot_username": "@foo_bot",
-               "supergroup_chat_id": "-100...", "daily_thread_id": 3,
-               "proactive_thread_id": 7},
+               "supergroup_chat_id": "-100...", "dashboard_thread_id": 3,
+               "decisions_thread_id": 7},
   "google": {"client_secret_path": "~/.hermes-proactive/client_secret.json",
              "token_path": "~/.hermes-proactive/token.json",
              "project_id": "...", "client_id": "..."},

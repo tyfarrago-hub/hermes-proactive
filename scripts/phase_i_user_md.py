@@ -16,7 +16,7 @@ from lib import ansi, state, ssh  # type: ignore
 PHASE = "i_user_md"
 SKILL_DIR = Path(__file__).resolve().parent.parent
 SNIPPET = SKILL_DIR / "snippets" / "user_md_proposal_section.md"
-MARKER = "<!-- hermes-proactive:proposal-handler -->"
+MARKER = "<!-- hermes-decisions:proposal-handler -->"
 
 
 def run() -> int:
@@ -32,9 +32,9 @@ def run() -> int:
     key = data.get("vps", {}).get("ssh_key")
     tg = data.get("telegram", {})
     chat = tg.get("supergroup_chat_id")
-    daily = tg.get("daily_thread_id")
-    proactive = tg.get("proactive_thread_id")
-    if not all([host, key, chat, daily, proactive]):
+    dashboard = tg.get("dashboard_thread_id")
+    decisions = tg.get("decisions_thread_id")
+    if not all([host, key, chat, dashboard, decisions]):
         state.mark_phase(PHASE, "blocked", blocker="phase E incomplete")
         return 1
 
@@ -52,8 +52,8 @@ def run() -> int:
     rendered_body = (
         SNIPPET.read_text()
         .replace("{{CHAT_ID}}", str(chat))
-        .replace("{{DAILY_THREAD_ID}}", str(daily))
-        .replace("{{PROACTIVE_THREAD_ID}}", str(proactive))
+        .replace("{{DASHBOARD_THREAD_ID}}", str(dashboard))
+        .replace("{{DECISIONS_THREAD_ID}}", str(decisions))
     )
     # Build the full block locally with real newlines around the marker
     # then append on the VPS in one shot. Avoids any echo \n quoting trap.

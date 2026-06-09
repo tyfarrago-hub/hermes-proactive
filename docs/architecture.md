@@ -32,8 +32,8 @@
                                             ┌────────────────────────────────────┐
                                             │ Telegram                           │
                                             │   └─ "Hermes Ops" supergroup       │
-                                            │       ├─ Daily Briefs (topic)      │
-                                            │       └─ Proactive Nudges (topic)  │
+                                            │       ├─ Dashboard (topic)         │
+                                            │       └─ Decisions (topic)         │
                                             └────────────────────────────────────┘
 ```
 
@@ -44,9 +44,9 @@
 3. The bridge reads `~/Library/Messages/chat.db` (read-only, requires Full Disk Access), filters spam, exports the last 6 hours to a JSON.
 4. SCP pushes the JSON to `/root/.hermes/inbox/imessage.json` on the VPS atomically.
 5. Within the next minute, the `imessage-scheduling-watcher` cron fires.
-6. The watcher's prompt instructs Hermes to: read the inbox JSON, read its state file (last processed message id), classify any new inbound message for scheduling intent, mint a proposal in `/root/.hermes/proposals.json`, and emit one "📅 Calendar add?" message to the Proactive Nudges topic.
+6. The watcher's prompt instructs Hermes to: read the inbox JSON, read its state file (last processed message id), classify any new inbound message for scheduling intent, mint a proposal in `/root/.hermes/proposals.json`, and emit one "📅 Calendar add?" message to the Decisions topic.
 7. You see the proposal on your phone in Telegram. Reply `yes a3` (or `edit a3 4pm`, or `no a3`).
-8. Hermes (always running as a Telegram bot) receives your reply in Proactive Nudges. The agent's system prompt (USER.md) tells it to detect this pattern and run `proposal_executor.py a3 yes` via the terminal tool. Phase J verifies this exact Telegram reply path before setup is marked complete.
+8. Hermes (always running as a Telegram bot) receives your reply in Decisions. The agent's system prompt (USER.md) tells it to detect this pattern and run `proposal_executor.py a3 yes` via the terminal tool. Phase J verifies this exact Telegram reply path before setup is marked complete.
 9. The executor looks up proposal a3, calls `google_workspace.calendar_create_event(...)`, records the result in `proposal_log.jsonl`, marks the proposal resolved.
 10. Hermes replies "✓ Done — event added Sat 3pm with Friend".
 
@@ -82,6 +82,6 @@ For a typical user:
 - 1 Telegram bot: free
 - 1 GCP project (Gmail + Calendar APIs): free tier, ~10k requests/day cap is way above what watchers need
 - 1 VPS: $5–12/mo
-- LLM tokens: depends on inbox size and watcher cadence. Sonnet is the default for reasoning. ~$5–20/mo for a busy inbox at the default cadences.
+- LLM tokens: depends on inbox size and watcher cadence, and on whichever provider/model you configured Hermes with. ~$5–20/mo for a busy inbox at the default cadences. A mid-tier reasoning model is plenty for the watchers.
 
 Watcher cost driver: gmail-reply-watcher reads up to 20 unread threads every 30 min. Most thicken inboxes don't have 20 needs-reply threads, so the watcher returns SILENT and emits nothing on most ticks.

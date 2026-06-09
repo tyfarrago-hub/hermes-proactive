@@ -22,19 +22,23 @@ VENV_PY = "/root/.hermes/hermes-agent/venv/bin/python"
 HERMES_CLI = f"{VENV_PY} -m hermes_cli.main"
 
 DEFAULT_ROUTING = {
-    # name fragment (case-insensitive) → bucket
-    "morning-brief": "daily",
-    "nightly-accomplishment": "daily",
-    "midday-check": "daily",
-    "evening-wrap": "daily",
-    "remind ty": "daily",
-    "relationships-pulse": "daily",
-    "mood-mirror": "daily",
-    "learning-loop": "daily",
-    "soul-refinement": "daily",
-    "imessage-opportunity-scout": "proactive",
-    "decisions-tracker": "proactive",
-    "daily-money-opportunity-scout": "proactive",
+    # name fragment (case-insensitive) → bucket.
+    # "dashboard" = the visible scheduled-brief topic. "local" = read on demand.
+    # Nothing auto-routes to the Decisions topic: that surface is reserved for
+    # the proposal mint/execute loop (the watchers phase H creates point there
+    # directly), so every card in Decisions stays something you actually act on.
+    "morning-brief": "dashboard",
+    "nightly-accomplishment": "dashboard",
+    "midday-check": "dashboard",
+    "evening-wrap": "dashboard",
+    "remind ": "dashboard",
+    "relationships-pulse": "dashboard",
+    "mood-mirror": "dashboard",
+    "learning-loop": "dashboard",
+    "soul-refinement": "dashboard",
+    "imessage-opportunity-scout": "local",
+    "decisions-tracker": "local",
+    "daily-money-opportunity-scout": "local",
     "operator-pulse": "local",
     "daily-living-crm": "local",
     "message feed watchdog": "local",
@@ -67,11 +71,11 @@ def _bucket_for(name: str) -> str | None:
     return None
 
 
-def _deliver_for(bucket: str, daily: int, proactive: int, chat: int) -> str:
-    if bucket == "daily":
-        return f"telegram:{chat}:{daily}"
-    if bucket == "proactive":
-        return f"telegram:{chat}:{proactive}"
+def _deliver_for(bucket: str, dashboard: int, decisions: int, chat: int) -> str:
+    if bucket == "dashboard":
+        return f"telegram:{chat}:{dashboard}"
+    if bucket == "decisions":
+        return f"telegram:{chat}:{decisions}"
     return "local"
 
 
@@ -88,9 +92,9 @@ def run() -> int:
     key = data.get("vps", {}).get("ssh_key")
     tg = data.get("telegram", {})
     chat = tg.get("supergroup_chat_id")
-    daily = tg.get("daily_thread_id")
-    proactive = tg.get("proactive_thread_id")
-    if not (chat and daily and proactive):
+    dashboard = tg.get("dashboard_thread_id")
+    decisions = tg.get("decisions_thread_id")
+    if not (chat and dashboard and decisions):
         state.mark_phase(PHASE, "blocked", blocker="phase E incomplete (no chat/thread ids)")
         return 1
 
@@ -108,7 +112,7 @@ def run() -> int:
         if not bucket:
             actions.append((job_id, name, "pause"))
             continue
-        target = _deliver_for(bucket, daily, proactive, chat)
+        target = _deliver_for(bucket, dashboard, decisions, chat)
         if j.get("deliver") != target:
             actions.append((job_id, name, f"edit→{target}"))
         else:

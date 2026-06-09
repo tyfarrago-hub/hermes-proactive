@@ -1,48 +1,79 @@
 # hermes-proactive
 
-Bottle the proactive Hermes Agent setup so a friend with fresh Claude Code can reach the same endpoint in one session.
+Stand up a proactive [Hermes Agent](https://github.com/NousResearch/hermes-agent) that works like a
+chief-of-staff, not a notifier: it reads your trusted context, drafts the action, and waits for you
+to say "yes." One install gets you the working spine. A companion guide takes you to the full
+system.
 
-## What you get when this finishes
+This is a blank slate. There are no accounts, tokens, messages, or personal preferences baked in —
+you wire it to your own.
 
-- A **VPS** with [Hermes Agent](https://github.com/NousResearch/hermes-agent) running as a systemd service.
-- A **Telegram supergroup** ("Hermes Ops") with two topics:
-  - **Daily Briefs** — predictable scheduled briefs (~2/day).
-  - **Proactive Nudges** — proposals you confirm with one reply.
-- A **Mac iMessage bridge** that pushes recent messages to the VPS every 5 minutes.
-- A **Google Workspace OAuth** token that lets Hermes read your Gmail, send drafts, and create calendar events.
-- Two **watchers** running on cron:
-  - `imessage-scheduling-watcher` (every 1 min) — when someone confirms a meeting in iMessage, you get "📅 Calendar add? yes / edit / no" in Proactive Nudges.
-  - `gmail-reply-watcher` (every 30 min) — when an email needs a reply, Hermes drafts it in your voice and shows it as "📨 Reply to {sender}? yes / edit / no".
-- A **proposal-execution loop**. When you reply `yes <id>` in Proactive Nudges, Hermes actually creates the calendar event or sends the email and confirms back with ✓.
+## The core (what the one-line install gives you)
+
+- A **VPS** running Hermes as a systemd service.
+- A **Telegram command center** ("Hermes Ops") with two topics:
+  - **Dashboard** — your scheduled briefs land here (~2/day).
+  - **Decisions** — proposals you confirm with one reply. Nothing else clutters it.
+- A **Mac iMessage bridge** that pushes recent messages to the VPS every 5 minutes (read-only).
+- **Google Workspace OAuth** so Hermes can read your Gmail, draft replies, and create calendar events.
+- Two **watchers** on cron:
+  - `imessage-scheduling-watcher` — when someone confirms a meeting in iMessage, you get
+    "📅 Calendar add? yes / edit / no" in Decisions.
+  - `gmail-reply-watcher` — when an email needs a reply, Hermes drafts it in your voice and shows
+    "📨 Reply to {sender}? yes / edit / no".
+- The **proposal/approval loop**: reply `yes <id>` in Decisions and Hermes actually creates the
+  event or sends the email, then confirms with ✓.
+
+## The full system (the rest of how a mature Hermes is set up)
+
+The core is the spine. The [Full Hermes Build Guide](docs/full-build-guide.md) is everything else,
+written as a blank slate so you can add it around your own accounts:
+
+- a **brain repo + file-based Living CRM** that turns messages into tracked relationships and
+  next actions,
+- a **USER.md / SOUL.md / MEMORY.md** profile system that makes every draft sound like you,
+- **WhatsApp**, multi-account **Gmail** with an emoji labeler and an unsubscribe audit,
+- **Plaid** (read-only bank visibility) and **Stripe** (revenue signals),
+- a **persistent VPS browser** for logged-in services (groceries, bank link, etc.),
+- the **full cron map** (morning/nightly briefs, weekly pulses, journal, soul refinement) with a
+  deliberately sparse cadence philosophy,
+- **MCP integration** so you can talk to Hermes from Claude Code.
+
+Add those one at a time, after the core install is green and quiet. The guide gives the sequence.
 
 ## Install
 
 One line:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tyfarrago-hub/hermes-proactive/v0.1.2/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tyfarrago-hub/hermes-proactive/v0.2.0/install.sh | bash
 ```
 
 Then in a fresh Claude Code session in the same shell:
 
 > set up hermes-proactive
 
-The agent will run the setup gate, which walks ten phases. Most are automatic. You'll be asked to do five manual things across the whole flow:
+The agent runs a ten-phase setup gate. Most phases are automatic. You'll be asked to do five
+manual things across the whole flow:
 
 1. **BotFather** — `/newbot` and paste the token back when asked (phase C).
-2. **Telegram supergroup** — create "Hermes Ops", enable Topics, add two topics, add the bot as admin (phase E). The skill walks you through each tap.
-3. **Google Cloud Console** — create a project, enable Gmail + Calendar APIs, click Create on a Desktop OAuth client, paste the JSON back (phase G).
-4. **Google consent** — click Allow on the OAuth consent screen that pops up (phase G).
-5. **Final Telegram smoke** — reply `yes <id>` to one test proposal so the setup proves the actual approval loop (phase J).
+2. **Telegram supergroup** — create "Hermes Ops", enable Topics, add the **Dashboard** and
+   **Decisions** topics, add the bot as admin (phase E). The skill walks each tap.
+3. **Google Cloud Console** — create a project, enable Gmail + Calendar APIs, create a Desktop OAuth
+   client, paste the JSON back (phase G).
+4. **Google consent** — click Allow on the OAuth consent screen (phase G).
+5. **Final Telegram smoke** — reply `yes <id>` to one test proposal so setup proves the real
+   approval loop (phase J).
 
-Total wall-clock target: under 60 minutes. Most of that is waiting on the Hermes installer + the first cron tick.
+Total wall-clock target: under 60 minutes, most of it waiting on the Hermes installer and the first
+cron tick.
 
 ## Requirements
 
-- macOS (for iMessage chat.db read; chat.db is Apple-only)
+- macOS (for the iMessage `chat.db` read; chat.db is Apple-only)
 - Python 3.11 or newer
-- A VPS you control with SSH access (any provider — DigitalOcean, Hetzner, Linode all work; ~$5–12/mo)
-- An OpenRouter API key (or any LLM provider Hermes supports)
+- A VPS you control with SSH access (DigitalOcean, Hetzner, Linode, etc.; ~$5–12/mo)
+- An LLM provider key for whatever Hermes supports (OpenRouter, Anthropic, OpenAI/Codex, ...)
 - A Telegram account
 - A Google account with Gmail + Calendar
 
@@ -50,17 +81,21 @@ Total wall-clock target: under 60 minutes. Most of that is waiting on the Hermes
 
 - Hermes Agent: free, MIT
 - VPS: $5–12/mo
-- LLM: $5–20/mo typical, depends on your inbox size
-- Google APIs: free tier, way bigger than what Hermes uses
+- LLM: $5–20/mo typical, scales with inbox size and cadence
+- Google APIs: free tier, far bigger than what Hermes uses
 - Telegram: free
 - This skill: free
 
 ## Privacy notes
 
 - Your **iMessages** never leave your Mac except to your own VPS over SSH.
-- The **bot token** is stored only in `/root/.hermes/.env` on the VPS. The skill never writes it to your Mac.
-- The **OAuth client_secret** and **token** live at `~/.hermes-proactive/` (0600) and `/root/.hermes/google_workspace_*.json` (0600). They're tied to your Google account; revoke anytime from [Google account permissions](https://myaccount.google.com/permissions).
-- All bot decisions on what to draft are local to your VPS. Your inbox content goes to whichever LLM provider you configured Hermes with.
+- The **bot token** is stored only in `/root/.hermes/.env` on the VPS. The skill never writes it to
+  your Mac.
+- The **OAuth client_secret** and **token** live at `~/.hermes-proactive/` (0600) and
+  `/root/.hermes/google_workspace_*.json` (0600). Revoke anytime from
+  [Google account permissions](https://myaccount.google.com/permissions).
+- All decisions on what to draft are local to your VPS. Inbox content goes to whichever LLM provider
+  you configured Hermes with.
 
 ## Re-running phases
 
@@ -79,7 +114,9 @@ python3 ~/.claude/skills/hermes-proactive/scripts/check_setup.py status
 
 ## Uninstall
 
-See `docs/uninstall.md` for a clean teardown that removes the launchd plist, the cron jobs on the VPS, the lib files, and the USER.md section. It does NOT delete Hermes itself or your Telegram supergroup — those are yours to keep.
+See [docs/uninstall.md](docs/uninstall.md) for a clean teardown that removes the launchd plist, the
+core cron jobs on the VPS, the lib files, and the USER.md section. It does NOT delete Hermes itself
+or your Telegram supergroup — those are yours to keep.
 
 ## License
 

@@ -72,8 +72,8 @@ def _walk_user_through_creation(bot_username: str) -> None:
   3. Open group settings (tap the title) → Edit.
   4. Group Type: Private.
   5. Toggle Topics ON. Display as Tabs or List, your call.
-  6. Back to chat. Top-right menu (…) → Create Topic. Name it: Daily Briefs
-  7. Same menu → Create Topic. Name it: Proactive Nudges
+  6. Back to chat. Top-right menu (…) → Create Topic. Name it: Dashboard
+  7. Same menu → Create Topic. Name it: Decisions
   8. Group settings → Administrators → Add Admin → search for {bot_username}.
   9. Grant the bot at minimum: Send Messages + Manage Topics permissions. Save.
 
@@ -81,31 +81,31 @@ def _walk_user_through_creation(bot_username: str) -> None:
 """)
 
 
-def _walk_user_through_markers(bot_username: str, daily_marker: str, proactive_marker: str) -> None:
+def _walk_user_through_markers(bot_username: str, dashboard_marker: str, decisions_marker: str) -> None:
     ansi.header("Phase E.2 — Mark each topic (manual, ~1 min)")
     print(f"""
   Send these EXACT messages, one per topic:
 
-  In Daily Briefs topic:
-      {bot_username} {daily_marker}
+  In Dashboard topic:
+      {bot_username} {dashboard_marker}
 
-  In Proactive Nudges topic:
-      {bot_username} {proactive_marker}
+  In Decisions topic:
+      {bot_username} {decisions_marker}
 
   Mention the bot. The unique tokens above tell us which thread is which.
   After both are sent, this script will pick them up automatically.
 """)
 
 
-def _scan_until_found(token: str, daily_marker: str, proactive_marker: str
+def _scan_until_found(token: str, dashboard_marker: str, decisions_marker: str
                       ) -> tuple[int | None, int | None, int | None]:
     chat_id = None
-    daily_thread = None
-    proactive_thread = None
+    dashboard_thread = None
+    decisions_thread = None
     offset = 0
     deadline = time.time() + POLL_TIMEOUT_S
 
-    while time.time() < deadline and not (chat_id and daily_thread and proactive_thread):
+    while time.time() < deadline and not (chat_id and dashboard_thread and decisions_thread):
         updates, offset = _get_updates(token, offset)
         for upd in updates:
             msg = upd.get("message") or upd.get("edited_message") or {}
@@ -114,16 +114,16 @@ def _scan_until_found(token: str, daily_marker: str, proactive_marker: str
                 continue
             text = msg.get("text") or ""
             thread = msg.get("message_thread_id")
-            if daily_marker in text and thread:
+            if dashboard_marker in text and thread:
                 chat_id = chat.get("id")
-                daily_thread = thread
-            if proactive_marker in text and thread:
+                dashboard_thread = thread
+            if decisions_marker in text and thread:
                 chat_id = chat.get("id")
-                proactive_thread = thread
-        if not (chat_id and daily_thread and proactive_thread):
+                decisions_thread = thread
+        if not (chat_id and dashboard_thread and decisions_thread):
             time.sleep(POLL_INTERVAL)
 
-    return chat_id, daily_thread, proactive_thread
+    return chat_id, dashboard_thread, decisions_thread
 
 
 def run() -> int:
@@ -161,21 +161,21 @@ def run() -> int:
     # Sleep briefly so any in-flight getUpdates from the gateway finishes.
     time.sleep(2)
 
-    daily_marker = f"hp-daily-{secrets.token_hex(3)}"
-    proactive_marker = f"hp-proactive-{secrets.token_hex(3)}"
+    dashboard_marker = f"hp-dashboard-{secrets.token_hex(3)}"
+    decisions_marker = f"hp-decisions-{secrets.token_hex(3)}"
 
     try:
-        _walk_user_through_markers(bot_username, daily_marker, proactive_marker)
+        _walk_user_through_markers(bot_username, dashboard_marker, decisions_marker)
         ansi.info(f"polling Telegram for up to {POLL_TIMEOUT_S} seconds…")
-        chat_id, daily_thread, proactive_thread = _scan_until_found(token, daily_marker, proactive_marker)
+        chat_id, dashboard_thread, decisions_thread = _scan_until_found(token, dashboard_marker, decisions_marker)
     finally:
         ansi.info("restarting hermes-gateway…")
         _start_gateway(host, key)
 
-    if not (chat_id and daily_thread and proactive_thread):
+    if not (chat_id and dashboard_thread and decisions_thread):
         ansi.fail(
             f"timeout waiting for marker messages. "
-            f"chat_id={chat_id} daily={daily_thread} proactive={proactive_thread}"
+            f"chat_id={chat_id} dashboard={dashboard_thread} decisions={decisions_thread}"
         )
         ansi.info("Most common cause: bot is not yet admin (cannot read non-mention messages), or messages weren't sent in the named topics. Re-run this phase.")
         state.mark_phase(PHASE, "blocked", blocker="topic thread_ids not discovered within timeout")
@@ -183,10 +183,10 @@ def run() -> int:
 
     state.update({"telegram": {
         "supergroup_chat_id": chat_id,
-        "daily_thread_id": daily_thread,
-        "proactive_thread_id": proactive_thread,
+        "dashboard_thread_id": dashboard_thread,
+        "decisions_thread_id": decisions_thread,
     }})
-    ansi.ok(f"chat_id={chat_id}  daily_thread={daily_thread}  proactive_thread={proactive_thread}")
+    ansi.ok(f"chat_id={chat_id}  dashboard_thread={dashboard_thread}  decisions_thread={decisions_thread}")
     state.mark_phase(PHASE, "complete")
     return 0
 

@@ -55,7 +55,7 @@ Most likely: the OAuth scopes didn't include `calendar.events`. Confirm by looki
 
 ## "Phase J ran but I didn't see a setup-complete message"
 
-The receipt is sent via the bot. If the bot isn't actually wired to the supergroup yet, the message goes nowhere. Open Telegram, look at "Hermes Ops" → Daily Briefs. If empty:
+The receipt is sent via the bot. If the bot isn't actually wired to the supergroup yet, the message goes nowhere. Open Telegram, look at "Hermes Ops" → Dashboard. If empty:
 
 1. Confirm the bot is admin in the supergroup with Send Messages permission.
 2. SSH to VPS, run: `tail /root/.hermes/cron/logs/*.log | head -50`. Look for delivery errors.

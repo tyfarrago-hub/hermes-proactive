@@ -1,4 +1,4 @@
-"""Proposal store for Hermes proactive nudges.
+"""Proposal store for the Hermes proposal / approval loop.
 
 A proposal is a pending action Hermes drafted that Ty hasn't approved yet.
 Stored at /root/.hermes/proposals.json. Resolved entries kept in the same file

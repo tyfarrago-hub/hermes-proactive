@@ -3,7 +3,7 @@
 
 Mints a synthetic calendar.add proposal on the VPS, executes it, confirms
 the calendar event was created, deletes it, and sends a setup-complete
-receipt to the Daily Briefs topic via the bundled _vps_send_telegram.py.
+receipt to the Dashboard topic via the bundled _vps_send_telegram.py.
 
 All VPS-side Python is shipped as files via SCP — no fragile inline -c
 f-string nesting.
@@ -36,8 +36,8 @@ import proposals
 
 p = proposals.mint(
     type_='calendar.add',
-    source='hermes-proactive smoke',
-    title='hermes-proactive setup smoke test - delete me',
+    source='hermes-decisions smoke',
+    title='hermes-decisions setup smoke test - delete me',
     datetime_iso='2099-01-01T12:00:00-05:00',
     datetime_human='2099-01-01 12:00 ET',
     contact='self',
@@ -101,9 +101,9 @@ def run() -> int:
     host = data.get("vps", {}).get("host")
     key = data.get("vps", {}).get("ssh_key")
     chat = data.get("telegram", {}).get("supergroup_chat_id")
-    daily = data.get("telegram", {}).get("daily_thread_id")
-    proactive = data.get("telegram", {}).get("proactive_thread_id")
-    if not all([host, key, chat, daily, proactive]):
+    dashboard = data.get("telegram", {}).get("dashboard_thread_id")
+    decisions = data.get("telegram", {}).get("decisions_thread_id")
+    if not all([host, key, chat, dashboard, decisions]):
         ansi.fail("missing VPS or Telegram chat/thread ids from setup state")
         state.mark_phase(PHASE, "blocked", blocker="missing prereqs (a/e)")
         return 1
@@ -155,23 +155,23 @@ def run() -> int:
 
     proposal_msg = (
         "Calendar add?\\n"
-        f"self - {result.get('title', 'hermes-proactive setup smoke test')}\\n"
+        f"self - {result.get('title', 'hermes-decisions setup smoke test')}\\n"
         f"{result.get('datetime_human', '2099-01-01 12:00 ET')}\\n\\n"
         f"reply: yes {proposal_id} | no {proposal_id}\\n"
         "Smoke test: reply yes to prove Hermes executes Telegram approvals."
     )
     rs = ssh.run(
         host,
-        f"python3 {SEND_HELPER_REMOTE} {chat} {proactive} {proposal_msg!r}",
+        f"python3 {SEND_HELPER_REMOTE} {chat} {decisions} {proposal_msg!r}",
         ssh_key=key,
         timeout=30,
     )
     if rs.returncode != 0:
-        ansi.fail(f"could not post smoke proposal to Proactive Nudges: {(rs.stderr or rs.stdout)[:300]}")
+        ansi.fail(f"could not post smoke proposal to Decisions: {(rs.stderr or rs.stdout)[:300]}")
         state.mark_phase(PHASE, "blocked", blocker="Telegram smoke proposal send failed")
         return 1
 
-    ansi.info(f"Open Proactive Nudges and reply exactly: yes {proposal_id}")
+    ansi.info(f"Open Decisions and reply exactly: yes {proposal_id}")
     ansi.info(f"Waiting up to {POLL_TIMEOUT_S} seconds for Hermes to execute the proposal…")
 
     proposal = {}
@@ -204,17 +204,17 @@ def run() -> int:
     if rc.returncode != 0:
         ansi.warn(f"cleanup of test event failed (event will linger): {rc.stderr[:300]}")
 
-    # Receipt to Daily Briefs via the robust helper.
-    msg = ("hermes-proactive setup complete. Watchers are live, and the Telegram "
+    # Receipt to Dashboard via the robust helper.
+    msg = ("hermes-decisions setup complete. Watchers are live, and the Telegram "
            "yes <id> approval loop created a real calendar event.")
     rs = ssh.run(host,
-                 f"python3 {SEND_HELPER_REMOTE} {chat} {daily} {msg!r}",
+                 f"python3 {SEND_HELPER_REMOTE} {chat} {dashboard} {msg!r}",
                  ssh_key=key, timeout=30)
     if rs.returncode != 0:
         ansi.warn(f"receipt send failed: {(rs.stderr or rs.stdout)[:300]}")
         ansi.info("Setup is still complete; manually send a confirmation if you want.")
     else:
-        ansi.ok("receipt posted to Daily Briefs")
+        ansi.ok("receipt posted to Dashboard")
 
     state.mark_phase(PHASE, "complete")
     ansi.ok("Phase J complete — full setup verified end-to-end")
