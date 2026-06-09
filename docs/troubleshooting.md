@@ -10,7 +10,7 @@ If you're using iTerm2, VS Code's integrated terminal, or another shell host, ad
 
 ## "Phase B blocked: hermes-gateway service not active"
 
-You need to finish the Hermes setup wizard. SSH in and run `hermes setup`. Pick OpenRouter as the LLM provider (or any other), paste your API key. Then `sudo systemctl enable --now hermes-gateway` and re-run phase B.
+You need to authenticate the LLM brain. SSH in and run `hermes login --provider openai-codex` (the recommended primary: OpenAI Codex `gpt-5.5`, an OAuth login, no API key to paste). Confirm `/root/.hermes/config.yaml` has `model: openai-codex/gpt-5.5`. Then `sudo systemctl enable --now hermes-gateway` and re-run phase B.
 
 ## "Phase C blocked: hermes setup --add-platform telegram not yet run"
 

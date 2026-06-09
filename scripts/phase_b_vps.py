@@ -70,7 +70,7 @@ def run() -> int:
     if not _gateway_running(host, key):
         ansi.warn("hermes-gateway service is not running yet.")
         ansi.info(f"SSH in and run: ssh -i {key} {host}")
-        ansi.info("then: hermes setup   # interactive: pick LLM (OpenRouter recommended), no platforms yet")
+        ansi.info("then: hermes login --provider openai-codex   # primary brain: OpenAI Codex gpt-5.5 (OAuth), set model openai-codex/gpt-5.5")
         ansi.info("then: sudo systemctl enable --now hermes-gateway")
         ansi.info("Re-run this phase when the gateway is active.")
         state.mark_phase(PHASE, "blocked", blocker="hermes-gateway service not active; complete `hermes setup` and start it")

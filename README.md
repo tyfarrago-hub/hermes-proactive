@@ -46,7 +46,7 @@ Add those one at a time, after the core install is green and quiet. The guide gi
 One line:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tyfarrago-hub/hermes-proactive/v0.2.0/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tyfarrago-hub/hermes-proactive/v0.2.1/install.sh | bash
 ```
 
 Then in a fresh Claude Code session in the same shell:
@@ -73,7 +73,7 @@ cron tick.
 - macOS (for the iMessage `chat.db` read; chat.db is Apple-only)
 - Python 3.11 or newer
 - A VPS you control with SSH access (DigitalOcean, Hetzner, Linode, etc.; ~$5–12/mo)
-- An LLM provider key for whatever Hermes supports (OpenRouter, Anthropic, OpenAI/Codex, ...)
+- An LLM brain for Hermes. Recommended: an **OpenAI / ChatGPT account** that Codex can log into — the primary is **OpenAI Codex `gpt-5.5`** via `hermes login` (OAuth, no API key). Optionally an **Anthropic** key for the recommended Sonnet→Haiku fallback. (Any other provider Hermes supports, e.g. OpenRouter, also works.)
 - A Telegram account
 - A Google account with Gmail + Calendar
 

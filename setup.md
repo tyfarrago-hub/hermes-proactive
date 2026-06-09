@@ -25,7 +25,7 @@ Script: `scripts/phase_b_vps.py`
 - SSHes in, runs the upstream Nous Research installer if Hermes isn't already at `/root/.hermes/hermes-agent/`.
 - Confirms `hermes-gateway.service` is active.
 
-Manual you do: SSH in once and run `hermes setup` to pick an LLM provider (OpenRouter recommended) and paste the API key. Then `sudo systemctl enable --now hermes-gateway`.
+Manual you do: SSH in once and authenticate the brain with `hermes login --provider openai-codex` — the recommended primary is **OpenAI Codex `gpt-5.5`** (an OAuth login against your OpenAI/ChatGPT account, no API key to paste). Confirm `model: openai-codex/gpt-5.5` in `/root/.hermes/config.yaml`. Recommended next: add an Anthropic Sonnet→Haiku `fallback_providers` chain so one provider's rate-limit can't take Hermes down (see [docs/full-build-guide.md](docs/full-build-guide.md), section 15). Then `sudo systemctl enable --now hermes-gateway`.
 
 ## Phase C — Telegram bot
 

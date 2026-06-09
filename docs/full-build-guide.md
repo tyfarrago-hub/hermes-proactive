@@ -444,15 +444,45 @@ If Hermes solves something complicated, save the workflow as a skill so it does 
 
 ## 15. Provider, model, and resilience
 
-Hermes works with any provider it supports (OpenAI/Codex, Anthropic, OpenRouter, and others). Two
-durable lessons from running this in production:
+### Recommended setup (what runs in production)
+
+- **Primary brain: OpenAI Codex `gpt-5.5`.** Authenticate it with `hermes login --provider
+  openai-codex` — an OAuth login against your OpenAI / ChatGPT account, no API key to paste. Then set
+  the model in `/root/.hermes/config.yaml`:
+
+  ```yaml
+  model: openai-codex/gpt-5.5
+  ```
+
+  Point the vision/auxiliary model at the same thing if you want screenshot workflows.
+
+- **Fallback chain: Anthropic Sonnet → Haiku.** Add it under `fallback_providers` in the same
+  `config.yaml` so a Codex rate-limit or token hiccup degrades instead of going dark:
+
+  ```yaml
+  fallback_providers:
+    - provider: anthropic
+      model: claude-sonnet-4-6
+    - provider: anthropic
+      model: claude-haiku-4-5
+  ```
+
+  Note: `hermes login` only covers `nous`, `openai-codex`, and `xai-oauth` — Anthropic is not in that
+  list, so the fallback needs an Anthropic credential set up separately (an API key in
+  `/root/.hermes/.env`, or an OAuth token if you run on a Claude subscription). Restart the gateway
+  after editing the config.
+
+Any provider Hermes supports will work (OpenRouter, plain Anthropic, etc.), but Codex-primary +
+Anthropic-fallback is the proven pairing.
+
+### Two durable lessons from running this in production
 
 1. **Configure a fallback chain.** A single primary provider with no fallback means one rate-limit
    or expired token takes the whole agent dark — including the context-compression step, which shows
-   up as the agent "losing context." Set a cheap fallback model so jobs degrade instead of dying.
+   up as the agent "losing context." The Sonnet → Haiku chain above is exactly that safety net.
 2. **Watch tokens, not the network.** Most "agent went quiet" incidents are an expired OAuth token
-   or a hit rate-limit, not connectivity. A tiny system-cron watchdog that refreshes the provider
-   token on a schedule (well inside its expiry window) prevents most outages, and because it is plain
+   or a hit rate-limit, not connectivity. A tiny system-cron watchdog that refreshes the Codex token
+   on a schedule (well inside its ~24h expiry window) prevents most outages, and because it is plain
    system cron it keeps working even when the agent brain is down.
 
 ---
