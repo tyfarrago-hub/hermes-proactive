@@ -46,7 +46,7 @@ Add those one at a time, after the core install is green and quiet. The guide gi
 One line:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tyfarrago-hub/hermes-proactive/v0.2.1/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tyfarrago-hub/hermes-proactive/v0.3.0/install.sh | bash
 ```
 
 Then in a fresh Claude Code session in the same shell:
@@ -67,6 +67,24 @@ manual things across the whole flow:
 
 Total wall-clock target: under 60 minutes, most of it waiting on the Hermes installer and the first
 cron tick.
+
+## Hardening (recommended for every install)
+
+Once the core is green and quiet, apply the **hardening layer** — the reliability and
+context-awareness fixes that keep Hermes up and make it actually understand replies. Skipping it
+leads to the two most common complaints: "Hermes went dark" (one provider hiccup takes the whole
+brain down) and "Hermes answered something unrelated" (a daily session reset severs the message you
+were replying to).
+
+```bash
+hardening/install_hardening.sh <ssh_host> --owner-chat <telegram_chat_id>
+hardening/install_hardening.sh <ssh_host> --check     # read-only state report, changes nothing
+```
+
+The installer is idempotent and provider-aware: it applies two update-safe gateway patches
+(reply-context anchor + proactive-message mirroring), flips `session_reset.mode` to `idle`, wires
+the re-apply machinery so the patches survive `hermes update`, and installs the relevant watchdogs.
+Full reference and manual steps: [hardening/HARDENING.md](hardening/HARDENING.md).
 
 ## Requirements
 

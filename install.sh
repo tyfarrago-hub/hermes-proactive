@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # hermes-proactive curl-target installer.
-# Usage: curl -fsSL https://raw.githubusercontent.com/tyfarrago-hub/hermes-proactive/v0.2.1/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/tyfarrago-hub/hermes-proactive/v0.3.0/install.sh | bash
 set -euo pipefail
 
 TARGET="${HERMES_PROACTIVE_TARGET:-$HOME/.claude/skills/hermes-proactive}"
