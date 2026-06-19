@@ -1,0 +1,16 @@
+# Hermes reliability watchdogs — root's SYSTEM crontab (`crontab -e`).
+# These run OUTSIDE the LLM brain on purpose, so they keep working even when the
+# brain is down. The installer adds only the ones relevant to your provider set.
+# Logs land in /root/.hermes/logs/*.cron.log.
+
+# Codex token force-refresh every 8h (well inside the ~24h token life).
+# Install ONLY if Hermes' primary or fallback provider is openai-codex.
+0 */8 * * * cd /root/.hermes/hermes-agent && HERMES_HOME=/root/.hermes HOME=/root /root/.hermes/hermes-agent/venv/bin/python /root/.hermes/scripts/codex_token_refresh.py >> /root/.hermes/logs/codex_token_refresh.cron.log 2>&1
+
+# Codex unfreeze every 5 min — bounds the dark window after a transient 429.
+# Install ONLY if Hermes uses Codex.
+*/5 * * * * cd /root/.hermes/hermes-agent && HERMES_HOME=/root/.hermes HOME=/root /root/.hermes/hermes-agent/venv/bin/python /root/.hermes/scripts/codex_unfreeze.py >> /root/.hermes/logs/codex_unfreeze.cron.log 2>&1
+
+# Google OAuth smoke alarm, daily at 09:30 local.
+# Install ONLY if Hermes has Google Workspace OAuth wired.
+30 9 * * * cd /root/.hermes/hermes-agent && HERMES_HOME=/root/.hermes HOME=/root /root/.hermes/hermes-agent/venv/bin/python /root/.hermes/scripts/google_token_monitor.py >> /root/.hermes/logs/google_token_monitor.cron.log 2>&1

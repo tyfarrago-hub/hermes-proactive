@@ -54,6 +54,7 @@ hermes-proactive/
 ├── vps_libs/                   files SCP'd to /root/.hermes/lib/
 ├── prompts/                    cron job prompts
 ├── snippets/                   reusable text fragments (USER.md addition)
+├── hardening/                  reliability + context-awareness layer (install_hardening.sh + HARDENING.md)
 └── docs/
     ├── full-build-guide.md     blank-slate guide to the FULL system (everything past the core)
     ├── architecture.md
@@ -71,6 +72,26 @@ labeler or unsubscribe audit, Plaid, Stripe, the persistent VPS browser, the ful
 USER/SOUL/MEMORY profile system — read `docs/full-build-guide.md` and follow the module + sequence
 there. Those modules are documented (not auto-installed); add them one at a time, after the core is
 green and quiet.
+
+## Hardening (recommended for every install)
+
+Once the core is green, apply the **hardening layer** — the reliability +
+context-awareness fixes that keep Hermes up and make it actually understand
+replies. Without it, the most common complaints are "Hermes goes dark" (a single
+provider hiccup takes the whole brain down) and "Hermes answered something
+unrelated" (a daily session reset severs the message the user is replying to).
+
+```bash
+hardening/install_hardening.sh <ssh_host> --owner-chat <telegram_chat_id>
+hardening/install_hardening.sh <ssh_host> --check     # read-only state report
+```
+
+The installer is idempotent and provider-aware. It applies two update-safe
+gateway patches (reply-context anchor + proactive-message mirroring), flips
+`session_reset.mode` to `idle` (removes the daily hard reset), wires the
+update-safe re-apply machinery, and installs the relevant reliability watchdogs
+(Codex token refresh/unfreeze if the brain is Codex; Google OAuth smoke alarm if
+OAuth is wired). Full reference + manual steps + auth recipes: `hardening/HARDENING.md`.
 
 ## State machine
 

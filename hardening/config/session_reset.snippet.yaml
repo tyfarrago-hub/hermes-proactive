@@ -1,0 +1,22 @@
+# config.yaml :: session_reset  (lives in /root/.hermes/config.yaml)
+#
+# WHY: Hermes keeps one stable session per chat, but the session_id ROTATES when
+# a reset policy fires. With `mode: both` + `at_hour`, a DAILY hard reset wipes
+# the live conversation at that hour. So a reply sent the morning after an
+# overnight message lands in a brand-new EMPTY session: the message directly
+# above is gone, and the agent free-associates (often via session_search) to a
+# stale topic. That is the #1 cause of "Hermes answered something unrelated."
+#
+# FIX: `mode: idle` removes the daily nuke. The conversation now stays continuous
+# through the day; it only clears after a genuine long idle gap (idle_minutes).
+# Context compression keeps long live sessions affordable, so you do NOT need the
+# daily reset to bound cost.
+#
+# Pair this with the reply-context-anchor patch (hardening/patches/), which, even
+# when an idle reset DOES fire, seeds the fresh session with the prior session's
+# last message as an explicit "you are replying to this" anchor.
+
+session_reset:
+  mode: idle          # was: both  (both = idle + daily hard reset at at_hour)
+  idle_minutes: 1440  # clear only after 24h of true silence
+  at_hour: 4          # inert under mode: idle; kept for easy re-enable

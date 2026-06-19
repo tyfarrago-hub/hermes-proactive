@@ -1,0 +1,11 @@
+# OPTIONAL drop-in. Lets the gateway read images Hermes generates/caches so it
+# can attach or reason over them. Add directories the owner actually uses;
+# colon-separated, absolute paths only. Install to
+# /etc/systemd/system/hermes-gateway.service.d/media-allow.conf then
+# `systemctl daemon-reload && systemctl restart hermes-gateway`.
+[Service]
+Environment="HERMES_MEDIA_ALLOW_DIRS=/root/.hermes/image_cache:/root/.hermes/cache/screenshots:/root/.hermes/media_cache"
+# Recency-trust window for attaching just-generated files (default 600s). With the
+# media-root-home patch applied, bumping this to 30 min covers slow renders so a
+# carousel/QR generated minutes ago still attaches. Optional.
+Environment="HERMES_MEDIA_TRUST_RECENT_SECONDS=1800"

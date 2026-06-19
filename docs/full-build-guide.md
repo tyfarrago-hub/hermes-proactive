@@ -11,8 +11,13 @@ messages, calendar, email, and life context.
 It is not a clone. There are no tokens, browser profiles, message histories, or private notes
 in here. You bring your own accounts and wire them into the same shapes.
 
-Order of operations: get the core install working and quiet first. Then add modules from this
-guide one at a time, in the sequence at the end. Do not turn on ten proactive jobs at once.
+Order of operations: get the core install working and quiet first. Then apply the **hardening
+layer** (`../hardening/` — `install_hardening.sh` + `HARDENING.md`), which keeps Hermes up and
+makes it understand replies: update-safe gateway patches (reply-context anchor + proactive-message
+mirroring), `session_reset.mode: idle` (removes the daily reset that severs the message a user is
+replying to), a provider fallback chain, and reliability watchdogs. Only after the core is green
+and hardened, add modules from this guide one at a time, in the sequence at the end. Do not turn
+on ten proactive jobs at once.
 
 ---
 

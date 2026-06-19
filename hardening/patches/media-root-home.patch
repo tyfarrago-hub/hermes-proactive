@@ -1,0 +1,22 @@
+diff --git a/gateway/platforms/base.py b/gateway/platforms/base.py
+index d39601546..61520376f 100644
+--- a/gateway/platforms/base.py
++++ b/gateway/platforms/base.py
+@@ -862,8 +862,7 @@ _MEDIA_DELIVERY_DENIED_PREFIXES = (
+     "/proc",
+     "/sys",
+     "/dev",
+-    "/root",
+-    "/boot",
++    "/boot",  # LOCAL PATCH (media-root-home): "/root" removed — it is the agent HOME, not a system path
+     "/var/log",
+     "/var/lib",
+     "/var/run",
+@@ -873,6 +872,7 @@ _MEDIA_DELIVERY_DENIED_PREFIXES = (
+ # Resolved at check time against the live $HOME so containers and alt-home
+ # setups work correctly.
+ _MEDIA_DELIVERY_DENIED_HOME_SUBPATHS = (
++    ".hermes",  # LOCAL PATCH (media-root-home): credential/config home (allowlisted cache dirs still pass)
+     ".ssh",
+     ".aws",
+     ".gnupg",

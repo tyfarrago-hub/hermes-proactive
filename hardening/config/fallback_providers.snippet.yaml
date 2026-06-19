@@ -1,0 +1,28 @@
+# config.yaml :: provider + fallback chain  (lives in /root/.hermes/config.yaml)
+#
+# WHY: a single-provider brain with no fallback goes 100% dark on any provider
+# hiccup -- a 429 rate-limit, an expired token, or (the subtle one) a failed
+# auxiliary CONTEXT-COMPRESSION call, which manifests as Hermes "losing context"
+# mid-thread. A fallback chain lets the gateway fall through to a second provider
+# for both inference AND compression instead of dropping the turn.
+#
+# RECOMMENDED: keep your preferred primary, add a cheaper fallback or two. The
+# example below is Codex-primary with an Anthropic Sonnet -> Haiku fallback
+# (Haiku has the most headroom, so it catches the tail). If the client is
+# Anthropic-primary, invert it. Each fallback needs its own working credential
+# in the pool (see HARDENING.md for the auth recipes).
+
+model: openai-codex/gpt-5.5
+
+fallback_providers:
+  - provider: anthropic
+    model: claude-sonnet-4-6
+  - provider: anthropic
+    model: claude-haiku-4-5
+
+# Keep the auxiliary (vision / compression) lane pointed at a provider that is
+# actually authed, so compression never silently fails:
+# auxiliary:
+#   vision:
+#     provider: openai-codex
+#     model: gpt-5.5

@@ -1,0 +1,54 @@
+diff --git a/cron/scheduler.py b/cron/scheduler.py
+index a51ade8ef..bb133873b 100644
+--- a/cron/scheduler.py
++++ b/cron/scheduler.py
+@@ -804,6 +804,26 @@ def _deliver_result(job: dict, content: str, adapters=None, loop=None) -> Option
+                 continue
+ 
+             logger.info("Job '%s': delivered to %s:%s", job["id"], platform_name, chat_id)
++            delivered = True
++
++        # LOCAL PATCH (mirror-cron-deliveries): record proactive/cron sends into
++        # the target chat's session transcript so a later short reply ("Remind me")
++        # has context. Upstream intentionally skips this; mirror_to_session safely
++        # no-ops when there is no clean matching session.
++        if delivered:
++            try:
++                from gateway.mirror import mirror_to_session
++                _origin = _resolve_origin(job) or {}
++                mirror_to_session(
++                    platform_name,
++                    chat_id,
++                    cleaned_delivery_content,
++                    source_label="cron",
++                    thread_id=thread_id,
++                    user_id=_origin.get("user_id"),
++                )
++            except Exception:
++                pass
+ 
+     if delivery_errors:
+         return "; ".join(delivery_errors)
+diff --git a/tests/cron/test_scheduler.py b/tests/cron/test_scheduler.py
+index 94587fcce..983812c6a 100644
+--- a/tests/cron/test_scheduler.py
++++ b/tests/cron/test_scheduler.py
+@@ -789,7 +789,8 @@ class TestDeliverResultWrapping:
+         assert "Report" in text_sent
+ 
+     def test_no_mirror_to_session_call(self):
+-        """Cron deliveries should NOT mirror into the gateway session."""
++        """LOCAL PATCH (mirror-cron-deliveries): cron deliveries DO mirror into the
++        matching gateway session so a later short reply has context."""
+         from gateway.config import Platform
+ 
+         pconfig = MagicMock()
+@@ -807,7 +808,7 @@ class TestDeliverResultWrapping:
+             }
+             _deliver_result(job, "Hello!")
+ 
+-        mirror_mock.assert_not_called()
++        mirror_mock.assert_called_once()
+ 
+     def test_origin_delivery_preserves_thread_id(self):
+         """Origin delivery should forward thread_id to the send helper."""

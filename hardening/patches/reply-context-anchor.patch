@@ -1,0 +1,67 @@
+diff --git a/gateway/run.py b/gateway/run.py
+index 7b5ace070..9b71b7151 100644
+--- a/gateway/run.py
++++ b/gateway/run.py
+@@ -8208,7 +8208,21 @@ class GatewayRunner:
+         # so the agent knows this is a fresh conversation (not an intentional /reset).
+         if getattr(session_entry, 'was_auto_reset', False):
+             reset_reason = getattr(session_entry, 'auto_reset_reason', None) or 'idle'
+-            if reset_reason == "suspended":
++            # LOCAL PATCH (reply-context): a fresh session must still know what the user is
++            # replying to. Anchor to the prior session's last message so plain-text
++            # replies (no quote) resolve to 'the message directly above'.
++            _carry = getattr(session_entry, 'carryover_anchor', None)
++            if _carry:
++                _role, _sep, _atext = _carry.partition('|')
++                _atext = (_atext or '')[:800]
++                _ref = ("the user's own previous message" if _role == 'USER' else 'your last message in this chat')
++                context_note = (
++                    '[Continuity note: this auto-rolled to a fresh session but is the SAME ongoing chat. '
++                    'The user is almost certainly replying to ' + _ref + ': «' + _atext + '». '
++                    'Treat that as the primary subject of their next message unless they clearly change topic. '
++                    'Do NOT use session_search to guess the topic when the message plainly refers to the above.]'
++                )
++            elif reset_reason == "suspended":
+                 context_note = "[System note: The user's previous session was stopped and suspended. This is a fresh conversation with no prior context.]"
+             elif reset_reason == "daily":
+                 context_note = "[System note: The user's session was automatically reset by the daily schedule. This is a fresh conversation with no prior context.]"
+diff --git a/gateway/session.py b/gateway/session.py
+index 5f6fcb9a6..73e6f7453 100644
+--- a/gateway/session.py
++++ b/gateway/session.py
+@@ -467,6 +467,7 @@ class SessionEntry:
+     # context-note prepend — both wrong for an explicit manual reset.
+     # See issue #6508.
+     is_fresh_reset: bool = False
++    carryover_anchor: Optional[str] = None  # LOCAL PATCH (reply-context): prior session's last message, used as a reply anchor after an auto-reset (transient, not persisted)
+     
+     # Set by the background expiry watcher after it finalizes an expired
+     # session (invoking on_session_finalize hooks and evicting the cached
+@@ -945,6 +946,27 @@ class SessionStore:
+                 self._db.end_session(db_end_session_id, "session_reset")
+             except Exception as e:
+                 logger.debug("Session DB operation failed: %s", e)
++            # LOCAL PATCH (reply-context): capture the just-ended session's last message so the
++            # fresh session can anchor the user's next (often plain-text) reply to
++            # "the message directly above" instead of guessing via session_search.
++            try:
++                _prior_msgs = self._db.get_messages(db_end_session_id)
++                _anchor = None
++                for _m in reversed(_prior_msgs):
++                    _c = _m.get("content")
++                    if _m.get("role") == "assistant" and isinstance(_c, str) and _c.strip():
++                        _anchor = "ASSISTANT|" + _c.strip()[:800]
++                        break
++                if _anchor is None:
++                    for _m in reversed(_prior_msgs):
++                        _c = _m.get("content")
++                        if _m.get("role") == "user" and isinstance(_c, str) and _c.strip():
++                            _anchor = "USER|" + _c.strip()[:800]
++                            break
++                if _anchor:
++                    entry.carryover_anchor = _anchor
++            except Exception as _e:
++                logger.debug("carryover_anchor capture failed: %s", _e)
+ 
+         if self._db and db_create_kwargs:
+             try:
